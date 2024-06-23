@@ -25,5 +25,14 @@ router.post(
   jwtParse,
   myRestaurantController.createMyRestaurant
 );
+// PUT /api/v1/restaurant
+router.put(
+  "/",
+  upload.single("imageFile"),
+  validateMyRestaurantRequest,
+  jwtCheck,
+  jwtParse,
+  myRestaurantController.updateMyRestaurant
+);
 
 export default router;
