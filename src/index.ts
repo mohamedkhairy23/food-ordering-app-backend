@@ -31,7 +31,7 @@ app.get("/health", async (req: Request, res: Response) => {
 app.use("/api/my/user", myUserRoute);
 // /api/my/restaurant
 app.use("/api/my/restaurant", myRestaurantRoute);
-///api/restaurant
+// api/restaurant
 app.use("/api/restaurant", restaurantRoute);
 
 const PORT = process.env.PORT || 5000;
