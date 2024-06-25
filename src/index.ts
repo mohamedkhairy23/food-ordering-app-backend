@@ -7,6 +7,7 @@ import { v2 as cloudinary } from "cloudinary";
 import myUserRoute from "./routes/MyUserRoute";
 import myRestaurantRoute from "./routes/MyRestaurantRoute";
 import restaurantRoute from "./routes/RestaurantRoute";
+import orderRoute from "./routes/OrderRoute";
 
 mongoose
   .connect(process.env.MONGODB_CONNECTION_STRING as string)
@@ -33,6 +34,8 @@ app.use("/api/my/user", myUserRoute);
 app.use("/api/my/restaurant", myRestaurantRoute);
 // api/restaurant
 app.use("/api/restaurant", restaurantRoute);
+// api/order
+app.use("/api/order", orderRoute);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
