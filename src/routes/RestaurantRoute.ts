@@ -6,6 +6,15 @@ const router = express.Router();
 
 // /api/restaurant/search/:city
 router.get(
+  "/:restaurantId",
+  param("restaurantId")
+    .isString()
+    .trim()
+    .notEmpty()
+    .withMessage("reataurant ID parameter must be avalid string"),
+  restaurantController.getRestaurant
+);
+router.get(
   "/search/:city",
   param("city")
     .isString()
