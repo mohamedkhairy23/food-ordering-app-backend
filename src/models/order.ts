@@ -46,7 +46,7 @@ const orderSchema = new mongoose.Schema({
   totalAmount: Number,
   status: {
     type: String,
-    enum: ["placed", "paid", "inProgress", "outForDelivery", "Delivered"],
+    enum: ["placed", "paid", "inProgress", "outForDelivery", "delivered"],
   },
   createdAt: {
     type: Date,
