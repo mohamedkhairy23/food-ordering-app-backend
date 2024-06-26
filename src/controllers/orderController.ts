@@ -5,6 +5,7 @@ import Order from "../models/order";
 
 const STRIPE = new Stripe(process.env.STRIPE_API_KEY as string);
 const FRONTEND_URL = process.env.FRONTEND_URL as string;
+const STRIPE_ENDPOINT_SECRET = process.env.STRIPE_WEBHOOK_SECRET as string;
 
 type CheckoutSessionRequest = {
   cartItems: {
@@ -19,6 +20,37 @@ type CheckoutSessionRequest = {
     city: string;
   };
   restaurantId: string;
+};
+
+const stripeWebhookHandler = async (req: Request, res: Response) => {
+  let event;
+
+  try {
+    const sig = req.headers["stripe-signature"];
+    event = STRIPE.webhooks.constructEvent(
+      req.body,
+      sig as string,
+      STRIPE_ENDPOINT_SECRET
+    );
+  } catch (error: any) {
+    console.log(error);
+    return res.status(400).send(`Webhook error: ${error.message}`);
+  }
+
+  if (event.type === "checkout.session.completed") {
+    const order = await Order.findById(event.data.object.metadata?.orderId);
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    order.totalAmount = event.data.object.amount_total;
+    order.status = "paid";
+
+    await order.save();
+  }
+
+  res.status(200).send();
 };
 
 const createCheckoutSession = async (req: Request, res: Response) => {
@@ -59,7 +91,6 @@ const createCheckoutSession = async (req: Request, res: Response) => {
     }
 
     await newOrder.save();
-
     res.json({ url: session.url });
   } catch (error: any) {
     console.log(error);
@@ -71,17 +102,13 @@ const createLineItems = (
   checkoutSessionRequest: CheckoutSessionRequest,
   menuItems: MenuItemType[]
 ) => {
-  // 1. foreach cartItems, get the menuItem object from the restaurant to get the price.
-  // 2. foreach cartItems, and convert it to a stripe line item
-  // 3. return line item array
-
   const lineItems = checkoutSessionRequest.cartItems.map((cartItem) => {
     const menuItem = menuItems.find(
-      (menuItem) => menuItem._id.toString() === cartItem.menuItemId.toString()
+      (item) => item._id.toString() === cartItem.menuItemId.toString()
     );
 
     if (!menuItem) {
-      throw new Error(`Menu item ${cartItem.menuItemId} not found`);
+      throw new Error(`Menu item not found: ${cartItem.menuItemId}`);
     }
 
     const line_item: Stripe.Checkout.SessionCreateParams.LineItem = {
@@ -127,7 +154,7 @@ const createSession = async (
       restaurantId,
     },
     success_url: `${FRONTEND_URL}/order-status?success=true`,
-    cancel_url: `${FRONTEND_URL}/detail/${restaurantId}?success=false`,
+    cancel_url: `${FRONTEND_URL}/detail/${restaurantId}?cancelled=true`,
   });
 
   return sessionData;
@@ -135,4 +162,5 @@ const createSession = async (
 
 export default {
   createCheckoutSession,
+  stripeWebhookHandler,
 };
