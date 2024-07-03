@@ -1,5 +1,5 @@
 ## I used in this project:
-## Client
+## Client https://github.com/mohamedkhairy23/food-ordering-app-frontend
 - React + Typescript
 - React Query
 - React hook form with ZOD for validation
