@@ -3,6 +3,7 @@
 - React + Typescript
 - React Query
 - React hook form with ZOD for validation
+- Auth0 for authentication and authorization.
 - Tailwind with Shadcn UI
 - Stripe payment gateway 
 ## Server
